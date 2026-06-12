@@ -129,6 +129,56 @@
     .card-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
     .card-desc { font-size: 13px; color: #666; line-height: 1.7; }
     .card-tag { display: inline-block; font-size: 11px; background: #f0f2f5; color: #555; border-radius: 4px; padding: 2px 8px; margin-bottom: 10px; }
+
+    /* ── Tech / Arch ── */
+    .arch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .arch-card { border: 1px solid #e5e7ea; border-radius: 8px; padding: 18px; }
+    .arch-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .arch-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .arch-name { font-size: 14px; font-weight: 700; }
+    .arch-role { font-size: 12px; color: #999; margin-bottom: 10px; }
+    .arch-list { list-style: none; }
+    .arch-list li { font-size: 12px; color: #555; padding: 3px 0; border-bottom: 1px solid #f5f5f5; }
+    .arch-list li::before { content: "· "; color: #ccc; }
+    .arch-list li:last-child { border-bottom: none; }
+
+    /* ── Page structure ── */
+    .page-tree { font-family: "Consolas", "Menlo", monospace; font-size: 12px; background: #fafafa; border: 1px solid #e5e7ea; border-radius: 8px; padding: 20px 24px; line-height: 2; color: #333; }
+    .pt-dir { color: #2c6e49; font-weight: 600; }
+    .pt-file { color: #333; }
+    .pt-comment { color: #aaa; margin-left: 8px; }
+
+    /* ── DB Schema ── */
+    .schema-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .schema-table { border: 1px solid #e5e7ea; border-radius: 8px; overflow: hidden; }
+    .schema-table-head { background: #f5f7fa; padding: 10px 14px; border-bottom: 1px solid #e5e7ea; display: flex; justify-content: space-between; align-items: center; }
+    .schema-table-name { font-size: 13px; font-weight: 700; color: #1a1a1a; font-family: monospace; }
+    .schema-table-desc { font-size: 11px; color: #999; }
+    .schema-col { display: grid; grid-template-columns: 130px 90px 1fr; padding: 7px 14px; border-bottom: 1px solid #f5f5f5; font-size: 12px; align-items: baseline; }
+    .schema-col:last-child { border-bottom: none; }
+    .schema-col-name { color: #333; font-family: monospace; }
+    .schema-col-type { color: #7c6aa3; font-size: 11px; font-family: monospace; }
+    .schema-col-note { color: #aaa; font-size: 11px; }
+    .schema-pk { color: #c0392b; font-weight: 700; }
+    .schema-fk { color: #2c6e49; }
+    .schema-enum { color: #7c6aa3; font-size: 10px; background: #f0eef7; padding: 1px 5px; border-radius: 3px; }
+
+    /* ── ER diagram ── */
+    .er-diagram { border: 1px solid #e5e7ea; border-radius: 8px; padding: 24px; background: #fafafa; }
+    .er-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
+    .er-box { border: 1.5px solid #d0d3d8; border-radius: 6px; background: #fff; padding: 8px 14px; text-align: center; font-size: 12px; font-weight: 700; font-family: monospace; min-width: 100px; }
+    .er-box.primary { border-color: #2c6e49; color: #2c6e49; }
+    .er-arrow { font-size: 14px; color: #ccc; }
+    .er-label { font-size: 10px; color: #aaa; text-align: center; }
+
+    /* ── Vercel deploy flow ── */
+    .deploy-flow { display: flex; align-items: center; gap: 0; border: 1px solid #e5e7ea; border-radius: 8px; overflow: hidden; }
+    .deploy-step { flex: 1; padding: 16px 12px; text-align: center; background: #fff; border-right: 1px solid #e5e7ea; }
+    .deploy-step:last-child { border-right: none; }
+    .deploy-step-icon { font-size: 20px; margin-bottom: 6px; }
+    .deploy-step-name { font-size: 12px; font-weight: 700; color: #333; margin-bottom: 4px; }
+    .deploy-step-desc { font-size: 11px; color: #aaa; line-height: 1.4; }
+    .deploy-arrow-col { padding: 0 2px; color: #ddd; font-size: 18px; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -461,6 +511,408 @@
         <div class="cmp-item"><div class="cmp-key">競合</div><div class="after">採択後管理の空白地帯を狙う</div></div>
         <div class="cmp-item"><div class="cmp-key">利用頻度</div><div class="after">報告期限前に集中して使う</div></div>
         <div class="cmp-item"><div class="cmp-key">痛みの強度</div><div class="after">「やらないと返還」の強制力</div></div>
+      </div>
+    </div>
+  </section>
+
+
+  <hr>
+
+  <!-- ── Section 5: 技術スタック詳細 ── -->
+  <section class="section">
+    <p class="section-label">Section 5</p>
+    <h2 class="section-title">技術スタック詳細</h2>
+    <p class="section-desc">Next.js + Supabase + Vercel の3層構成。農家のオフライン環境に対応するため PWA 化し、Vercel のエッジネットワーク経由で配信する。</p>
+
+    <!-- デプロイフロー -->
+    <div style="margin-bottom:32px">
+      <p style="font-size:12px;font-weight:700;color:#aaa;letter-spacing:.5px;margin-bottom:12px">デプロイフロー</p>
+      <div class="deploy-flow">
+        <div class="deploy-step">
+          <div class="deploy-step-icon">🖥</div>
+          <div class="deploy-step-name">開発者 PC</div>
+          <div class="deploy-step-desc">VS Code / Cursor<br>TypeScript + Next.js</div>
+        </div>
+        <div class="deploy-arrow-col">→</div>
+        <div class="deploy-step">
+          <div class="deploy-step-icon">🐙</div>
+          <div class="deploy-step-name">GitHub</div>
+          <div class="deploy-step-desc">main ブランチへ<br>push / PR</div>
+        </div>
+        <div class="deploy-arrow-col">→</div>
+        <div class="deploy-step" style="background:#f0f7f4;border-color:#2c6e49">
+          <div class="deploy-step-icon">▲</div>
+          <div class="deploy-step-name" style="color:#2c6e49">Vercel</div>
+          <div class="deploy-step-desc">自動ビルド &amp; デプロイ<br>Preview URL / 本番 URL</div>
+        </div>
+        <div class="deploy-arrow-col">→</div>
+        <div class="deploy-step">
+          <div class="deploy-step-icon">🌐</div>
+          <div class="deploy-step-name">農家ブラウザ / PWA</div>
+          <div class="deploy-step-desc">エッジ配信 (nrt.surge)<br>オフラインキャッシュ</div>
+        </div>
+        <div class="deploy-arrow-col">↕</div>
+        <div class="deploy-step">
+          <div class="deploy-step-icon">🗄</div>
+          <div class="deploy-step-name">Supabase</div>
+          <div class="deploy-step-desc">PostgreSQL + Auth<br>Storage + Realtime</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 技術カード -->
+    <div class="arch-grid">
+      <div class="arch-card">
+        <div class="arch-card-head">
+          <div class="arch-icon" style="background:#000;color:#fff;font-size:13px;font-weight:700">N</div>
+          <div>
+            <div class="arch-name">Next.js 15 (App Router)</div>
+          </div>
+        </div>
+        <div class="arch-role">フロントエンド + API Routes</div>
+        <ul class="arch-list">
+          <li>App Router でファイルベースルーティング</li>
+          <li>Server Components でデータフェッチ</li>
+          <li>Route Handlers で軽量 API</li>
+          <li>next-pwa でオフライン対応</li>
+          <li>Tailwind CSS でスタイリング</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <div class="arch-card-head">
+          <div class="arch-icon" style="background:#3fcf8e;color:#fff;font-size:13px;font-weight:700">S</div>
+          <div>
+            <div class="arch-name">Supabase</div>
+          </div>
+        </div>
+        <div class="arch-role">バックエンド / BaaS</div>
+        <ul class="arch-list">
+          <li>PostgreSQL（RLS でチームデータを分離）</li>
+          <li>Auth — チームコード + 名前でログイン</li>
+          <li>Storage — ファイルアップロード（書類PDFなど）</li>
+          <li>Realtime — 複数端末の同時編集に対応</li>
+          <li>Edge Functions — 期限アラート通知</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <div class="arch-card-head">
+          <div class="arch-icon" style="background:#000;color:#fff;font-size:15px">▲</div>
+          <div>
+            <div class="arch-name">Vercel</div>
+          </div>
+        </div>
+        <div class="arch-role">ホスティング / CI/CD</div>
+        <ul class="arch-list">
+          <li>GitHub push で自動デプロイ</li>
+          <li>PR ごとに Preview URL を発行</li>
+          <li>Edge Network — 東京リージョン (nrt) で配信</li>
+          <li>Analytics で利用状況を確認</li>
+          <li>無料プランで十分（個人チーム規模）</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ページ構成 -->
+    <div style="margin-top:32px">
+      <p style="font-size:12px;font-weight:700;color:#aaa;letter-spacing:.5px;margin-bottom:12px">Next.js ページ構成（App Router）</p>
+      <div class="page-tree">
+        <span class="pt-dir">app/</span><br>
+        &nbsp;&nbsp;<span class="pt-file">page.tsx</span><span class="pt-comment">← ログイン画面（チームコード入力）</span><br>
+        &nbsp;&nbsp;<span class="pt-dir">(dashboard)/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="pt-file">layout.tsx</span><span class="pt-comment">← ボトムナビ・ヘッダー共通レイアウト</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="pt-file">page.tsx</span><span class="pt-comment">← メイン4ペイン画面（補助金一覧）</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="pt-dir">deadlines/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="pt-file">page.tsx</span><span class="pt-comment">← 期限一覧（全補助金 時系列）</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="pt-dir">settings/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="pt-file">page.tsx</span><span class="pt-comment">← 設定（チーム名・メンバー管理）</span><br>
+        &nbsp;&nbsp;<span class="pt-dir">api/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="pt-file">subsidies/route.ts</span><span class="pt-comment">← 補助金 CRUD</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="pt-file">documents/route.ts</span><span class="pt-comment">← 書類 CRUD</span><br>
+        <span class="pt-dir">components/</span><br>
+        &nbsp;&nbsp;<span class="pt-dir">pane/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="pt-file">Pane1SubsidyNav.tsx</span>&nbsp;&nbsp;<span class="pt-file">Pane2DocumentList.tsx</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="pt-file">Pane3DocumentDetail.tsx</span>&nbsp;&nbsp;<span class="pt-file">Pane4DeadlineSummary.tsx</span><br>
+        <span class="pt-dir">lib/</span><br>
+        &nbsp;&nbsp;<span class="pt-file">supabase.ts</span><span class="pt-comment">← Supabase クライアント</span><br>
+        &nbsp;&nbsp;<span class="pt-file">types.ts</span><span class="pt-comment">← 型定義（Team, Subsidy, Document…）</span>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── Section 6: データベース設計 ── -->
+  <section class="section">
+    <p class="section-label">Section 6</p>
+    <h2 class="section-title">データベース設計（Supabase / PostgreSQL）</h2>
+    <p class="section-desc">5テーブル構成。チームコードで農場ごとにデータを分離し、Row Level Security (RLS) で他チームのデータへのアクセスを遮断する。</p>
+
+    <!-- ER図 -->
+    <div style="margin-bottom:28px">
+      <p style="font-size:12px;font-weight:700;color:#aaa;letter-spacing:.5px;margin-bottom:12px">テーブル関連図（ER図）</p>
+      <div class="er-diagram">
+        <div class="er-row">
+          <div>
+            <div class="er-box primary">teams</div>
+            <div class="er-label">チーム</div>
+          </div>
+          <div class="er-arrow">1</div>
+          <div class="er-arrow">───</div>
+          <div class="er-arrow">N</div>
+          <div>
+            <div class="er-box">subsidies</div>
+            <div class="er-label">補助金</div>
+          </div>
+          <div class="er-arrow">1</div>
+          <div class="er-arrow">───</div>
+          <div class="er-arrow">N</div>
+          <div>
+            <div class="er-box">documents</div>
+            <div class="er-label">書類</div>
+          </div>
+        </div>
+        <div class="er-row" style="margin-top:16px">
+          <div style="text-align:center;font-size:11px;color:#aaa">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            1 ↓ N<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <div class="er-box" style="display:inline-block">members</div>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            1 ↓ N<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <div class="er-label" style="display:inline-block">メンバーセッション</div>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <div class="er-box" style="display:inline-block">document_templates</div><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <div class="er-label" style="display:inline-block">書類テンプレート（前回コピー用）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- テーブル定義 -->
+    <div class="schema-grid">
+
+      <!-- teams -->
+      <div class="schema-table">
+        <div class="schema-table-head">
+          <span class="schema-table-name">teams</span>
+          <span class="schema-table-desc">チーム（農場単位）</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name schema-pk">id</span>
+          <span class="schema-col-type">uuid</span>
+          <span class="schema-col-note">PK, default gen_random_uuid()</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">code</span>
+          <span class="schema-col-type">text</span>
+          <span class="schema-col-note">UNIQUE — チームコード（ログイン用）</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">name</span>
+          <span class="schema-col-type">text</span>
+          <span class="schema-col-note">チーム名（例: 山田農場）</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">created_at</span>
+          <span class="schema-col-type">timestamptz</span>
+          <span class="schema-col-note">default now()</span>
+        </div>
+      </div>
+
+      <!-- members -->
+      <div class="schema-table">
+        <div class="schema-table-head">
+          <span class="schema-table-name">members</span>
+          <span class="schema-table-desc">メンバーセッション</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name schema-pk">id</span>
+          <span class="schema-col-type">uuid</span>
+          <span class="schema-col-note">PK</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name schema-fk">team_id</span>
+          <span class="schema-col-type">uuid</span>
+          <span class="schema-col-note">FK → teams.id</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">name</span>
+          <span class="schema-col-type">text</span>
+          <span class="schema-col-note">メンバー名（例: 山田 太郎）</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">created_at</span>
+          <span class="schema-col-type">timestamptz</span>
+          <span class="schema-col-note">最終ログイン日時として更新</span>
+        </div>
+      </div>
+
+      <!-- subsidies -->
+      <div class="schema-table">
+        <div class="schema-table-head">
+          <span class="schema-table-name">subsidies</span>
+          <span class="schema-table-desc">補助金</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name schema-pk">id</span>
+          <span class="schema-col-type">uuid</span>
+          <span class="schema-col-note">PK</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name schema-fk">team_id</span>
+          <span class="schema-col-type">uuid</span>
+          <span class="schema-col-note">FK → teams.id (RLS キー)</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">name</span>
+          <span class="schema-col-type">text</span>
+          <span class="schema-col-note">補助金名</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">issuer</span>
+          <span class="schema-col-type">text</span>
+          <span class="schema-col-note">交付元（農水省 / 都道府県 / 市町村）</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">status</span>
+          <span class="schema-col-type">text</span>
+          <span class="schema-col-note"><span class="schema-enum">active</span> <span class="schema-enum">reporting</span> <span class="schema-enum">completed</span></span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">adoption_date</span>
+          <span class="schema-col-type">date</span>
+          <span class="schema-col-note">交付決定日</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">deadline</span>
+          <span class="schema-col-type">date</span>
+          <span class="schema-col-note">実績報告期限（アラートの基準）</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">amount</span>
+          <span class="schema-col-type">integer</span>
+          <span class="schema-col-note">交付額（円）nullable</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">notes</span>
+          <span class="schema-col-type">text</span>
+          <span class="schema-col-note">メモ nullable</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">updated_at</span>
+          <span class="schema-col-type">timestamptz</span>
+          <span class="schema-col-note">trigger で自動更新</span>
+        </div>
+      </div>
+
+      <!-- documents -->
+      <div class="schema-table">
+        <div class="schema-table-head">
+          <span class="schema-table-name">documents</span>
+          <span class="schema-table-desc">書類チェックリスト</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name schema-pk">id</span>
+          <span class="schema-col-type">uuid</span>
+          <span class="schema-col-note">PK</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name schema-fk">subsidy_id</span>
+          <span class="schema-col-type">uuid</span>
+          <span class="schema-col-note">FK → subsidies.id</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">name</span>
+          <span class="schema-col-type">text</span>
+          <span class="schema-col-note">書類名（例: 通帳コピー）</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">status</span>
+          <span class="schema-col-type">text</span>
+          <span class="schema-col-note"><span class="schema-enum">pending</span> <span class="schema-enum">collected</span> <span class="schema-enum">submitted</span></span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">due_date</span>
+          <span class="schema-col-type">date</span>
+          <span class="schema-col-note">個別期限 nullable</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">notes</span>
+          <span class="schema-col-type">text</span>
+          <span class="schema-col-note">備考（例: 直近3ヶ月分）nullable</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">file_url</span>
+          <span class="schema-col-type">text</span>
+          <span class="schema-col-note">Supabase Storage URL nullable</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">sort_order</span>
+          <span class="schema-col-type">integer</span>
+          <span class="schema-col-note">表示順（ユーザーが並び替え可）</span>
+        </div>
+        <div class="schema-col">
+          <span class="schema-col-name">updated_at</span>
+          <span class="schema-col-type">timestamptz</span>
+          <span class="schema-col-note">trigger で自動更新</span>
+        </div>
+      </div>
+
+      <!-- document_templates -->
+      <div class="schema-table" style="grid-column: 1 / -1;">
+        <div class="schema-table-head">
+          <span class="schema-table-name">document_templates</span>
+          <span class="schema-table-desc">書類テンプレート（前回コピー機能の元データ）</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr">
+          <div>
+            <div class="schema-col">
+              <span class="schema-col-name schema-pk">id</span>
+              <span class="schema-col-type">uuid</span>
+              <span class="schema-col-note">PK</span>
+            </div>
+            <div class="schema-col">
+              <span class="schema-col-name schema-fk">team_id</span>
+              <span class="schema-col-type">uuid</span>
+              <span class="schema-col-note">FK → teams.id（チームごとのテンプレート）</span>
+            </div>
+          </div>
+          <div>
+            <div class="schema-col">
+              <span class="schema-col-name">name</span>
+              <span class="schema-col-type">text</span>
+              <span class="schema-col-note">テンプレート名（例: 強い農業づくり補助金 2025年度版）</span>
+            </div>
+            <div class="schema-col">
+              <span class="schema-col-name">document_names</span>
+              <span class="schema-col-type">text[]</span>
+              <span class="schema-col-note">書類名リスト（例: ["通帳コピー","確定申告書",…]）</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RLSポリシー説明 -->
+    <div style="margin-top:24px;background:#fafafa;border:1px solid #e5e7ea;border-radius:8px;padding:20px">
+      <p style="font-size:12px;font-weight:700;color:#aaa;letter-spacing:.5px;margin-bottom:12px">Row Level Security（RLS）の考え方</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <p style="font-size:13px;font-weight:700;margin-bottom:8px">ポリシー設計</p>
+          <p style="font-size:13px;color:#555;line-height:1.7">セッション変数 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:12px">app.current_team_id</code> にログイン時のチームIDをセットする。各テーブルの SELECT / INSERT / UPDATE / DELETE はすべて「<code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:12px">team_id = current_team_id</code>」の条件でフィルタされ、他農場のデータへはアクセスできない。</p>
+        </div>
+        <div>
+          <p style="font-size:13px;font-weight:700;margin-bottom:8px">スキーマのポイント</p>
+          <ul style="font-size:13px;color:#555;line-height:2;list-style:none">
+            <li>· <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:12px">subsidies.deadline</code> に index を張り、30日以内クエリを高速化</li>
+            <li>· <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:12px">documents.sort_order</code> でリスト順をユーザーが自由に並び替え</li>
+            <li>· <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:12px">updated_at</code> は trigger で自動更新（手動 set 不要）</li>
+            <li>· Supabase Storage バケット <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:12px">documents</code> を private で作成し、署名付き URL で参照</li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
