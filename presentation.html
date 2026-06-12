@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>農業補助金管理ツール — 設計ドキュメント</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", sans-serif;
+      font-size: 15px; line-height: 1.75;
+      color: #1a1a1a; background: #fff;
+    }
+    .wrapper { max-width: 920px; margin: 0 auto; padding: 80px 40px; }
+
+    /* ── Hero ── */
+    .hero { margin-bottom: 72px; }
+    .hero-eyebrow { font-size: 13px; color: #999; margin-bottom: 18px; letter-spacing: .5px; }
+    .hero-title { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 16px; letter-spacing: -.5px; }
+    .hero-sub { font-size: 18px; color: #555; margin-bottom: 20px; }
+    .hero-desc { font-size: 15px; color: #666; line-height: 1.85; margin-bottom: 28px; }
+    .tech-stack { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tech-pill { padding: 4px 13px; border-radius: 5px; background: #f0f2f5; color: #333; font-size: 13px; font-weight: 500; }
+
+    /* ── Sections ── */
+    .section { margin-bottom: 72px; }
+    .section-label { font-size: 12px; color: #bbb; letter-spacing: 1.5px; font-weight: 600; margin-bottom: 20px; }
+    .section-title { font-size: 28px; font-weight: 700; margin-bottom: 14px; }
+    .section-desc { color: #666; margin-bottom: 36px; font-size: 15px; }
+    hr { border: none; border-top: 1px solid #ebebeb; margin: 64px 0; }
+
+    /* ── Numbered list ── */
+    .numbered-list { display: flex; flex-direction: column; gap: 36px; }
+    .numbered-item { display: flex; gap: 28px; }
+    .number { font-size: 30px; font-weight: 800; color: #e8eaed; line-height: 1; min-width: 56px; padding-top: 2px; }
+    .item-content h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .item-content p { color: #555; font-size: 14px; line-height: 1.8; }
+
+    /* ── Browser mockup ── */
+    .browser { border: 1px solid #d0d3d8; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+    .browser-bar {
+      background: #f3f4f6; border-bottom: 1px solid #d8dadd;
+      padding: 9px 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .traffic { display: flex; gap: 5px; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .url-bar { flex: 1; background: #fff; border: 1px solid #d0d3d8; border-radius: 5px; padding: 3px 12px; font-size: 12px; color: #888; }
+    .breadcrumb-bar { padding: 7px 14px; background: #fafafa; border-bottom: 1px solid #ebebeb; font-size: 12px; color: #888; }
+    .breadcrumb-bar .link { color: #2c6e49; }
+    .breadcrumb-bar .current { color: #333; font-weight: 600; }
+    .sep { margin: 0 6px; color: #ccc; }
+
+    /* ── 4-pane grid ── */
+    .pane-grid { display: grid; grid-template-columns: 185px 250px 1fr 210px; height: 300px; }
+    .pane { border-right: 1px solid #ebebeb; display: flex; flex-direction: column; overflow: hidden; }
+    .pane:last-child { border-right: none; }
+    .pane-head { padding: 8px 12px; font-size: 11px; font-weight: 700; color: #aaa; background: #fafafa; border-bottom: 1px solid #ebebeb; letter-spacing: .5px; flex-shrink: 0; }
+    .pane-body { flex: 1; padding: 10px 12px; overflow: hidden; }
+
+    /* Subsidy nav items */
+    .s-group { font-size: 10px; font-weight: 700; color: #ccc; margin: 6px 0 5px; letter-spacing: .5px; }
+    .s-item { padding: 6px 8px; border-radius: 5px; cursor: pointer; margin-bottom: 3px; }
+    .s-item.active { background: #edf7f2; border-left: 3px solid #2c6e49; padding-left: 6px; }
+    .s-item.active .s-name { color: #2c6e49; font-weight: 600; }
+    .s-name { font-size: 11px; color: #333; margin-bottom: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .s-meta { font-size: 10px; color: #aaa; display: flex; justify-content: space-between; }
+    .prog { height: 3px; background: #eee; border-radius: 2px; margin-top: 4px; }
+    .prog-fill { height: 3px; background: #2c6e49; border-radius: 2px; }
+
+    /* Doc list items */
+    .d-group { font-size: 10px; font-weight: 700; color: #ccc; margin: 6px 0 5px; letter-spacing: .5px; }
+    .d-item { display: flex; align-items: center; gap: 7px; padding: 6px 0; border-bottom: 1px solid #f5f5f5; }
+    .d-item.active .d-name { color: #2c6e49; font-weight: 600; }
+    .d-item.active { background: #edf7f2; margin: 0 -12px; padding: 6px 12px; border-left: 3px solid #2c6e49; }
+    .ddot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dgray { background: #d0d3d8; }
+    .dblue { background: #4a90d9; }
+    .dgreen { background: #2c6e49; }
+    .d-name { font-size: 11px; color: #444; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .d-tag { font-size: 10px; padding: 1px 6px; border-radius: 3px; flex-shrink: 0; }
+    .tgray { background: #f0f0f0; color: #888; }
+    .tblue { background: #e5eeff; color: #3a6db5; }
+    .tgreen { background: #edf7f2; color: #2c6e49; }
+
+    /* Detail pane */
+    .detail-title { font-size: 13px; font-weight: 700; color: #222; margin-bottom: 10px; }
+    .warn-box { background: #fff5f5; border: 1px solid #f0a0a0; border-radius: 4px; padding: 7px 10px; margin-bottom: 10px; font-size: 11px; color: #c0392b; }
+    .frow { display: flex; padding: 5px 0; border-bottom: 1px solid #f5f5f5; }
+    .flabel { font-size: 11px; color: #aaa; width: 80px; flex-shrink: 0; }
+    .fval { font-size: 11px; color: #333; }
+
+    /* Deadline pane */
+    .dl-group { font-size: 10px; font-weight: 700; color: #ccc; margin: 6px 0 5px; letter-spacing: .5px; }
+    .dl-item { padding: 7px 0; border-bottom: 1px solid #f5f5f5; }
+    .dl-date { font-size: 11px; font-weight: 600; }
+    .dl-date.warn { color: #c0392b; }
+    .dl-name { font-size: 11px; color: #888; margin-top: 1px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .dl-docs { font-size: 10px; color: #bbb; margin-top: 2px; }
+    .dl-box { background: #fff5f5; border: 1px solid #f0a0a0; border-radius: 4px; padding: 7px 9px; margin-bottom: 6px; }
+
+    /* Pane labels */
+    .pane-labels { display: grid; grid-template-columns: 185px 250px 1fr 210px; border: 1px solid #d0d3d8; border-top: none; border-radius: 0 0 10px 10px; overflow: hidden; }
+    .pl-item { padding: 5px 12px; font-size: 11px; color: #bbb; border-right: 1px solid #ebebeb; }
+    .pl-item:last-child { border-right: none; }
+
+    /* Pane desc cards */
+    .pane-desc { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 22px; }
+    .pd-card { border: 1px solid #e5e7ea; border-radius: 7px; padding: 16px; }
+    .pd-num { font-size: 11px; color: #bbb; font-weight: 600; margin-bottom: 5px; }
+    .pd-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .pd-role { font-size: 12px; color: #666; }
+
+    .caption { font-size: 13px; color: #aaa; text-align: center; margin-top: 12px; }
+
+    /* Comparison */
+    .comparison { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #e5e7ea; border-radius: 8px; overflow: hidden; }
+    .cmp-col { padding: 24px; }
+    .cmp-col:first-child { background: #fafafa; border-right: 1px solid #e5e7ea; }
+    .cmp-label { font-size: 12px; font-weight: 700; color: #aaa; letter-spacing: .5px; margin-bottom: 14px; }
+    .cmp-item { display: flex; align-items: baseline; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+    .cmp-item:last-child { border-bottom: none; }
+    .cmp-key { font-size: 12px; color: #aaa; min-width: 100px; }
+    .before { color: #bbb; text-decoration: line-through; }
+    .after { color: #2c6e49; font-weight: 600; }
+
+    /* Cards grid 3-col */
+    .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .card { border: 1px solid #e5e7ea; border-radius: 8px; padding: 20px; }
+    .card-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .card-desc { font-size: 13px; color: #666; line-height: 1.7; }
+    .card-tag { display: inline-block; font-size: 11px; background: #f0f2f5; color: #555; border-radius: 4px; padding: 2px 8px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <p class="hero-eyebrow">農業補助金管理ツール — 設計ドキュメント</p>
+    <h1 class="hero-title">農業補助金管理ツール</h1>
+    <p class="hero-sub">4ペインで「全体・書類・詳細・期限」を1画面に収める</p>
+    <p class="hero-desc">
+      農業補助金の採択後は、複数の書類を揃えて期限内に報告書を提出するまでが長い。<br>
+      担当者は「どの補助金が今どこにいるか・この補助金の書類は何が足りないか・期限はいつか」を<br>
+      常に行き来して管理する。その3つを1画面に並べたのが、このツールです。
+    </p>
+    <div class="tech-stack">
+      <span class="tech-pill">Next.js (PWA)</span>
+      <span class="tech-pill">Supabase</span>
+      <span class="tech-pill">TypeScript</span>
+      <span class="tech-pill">Vercel</span>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── Section 1: 画面のキャプチャ ── -->
+  <section class="section">
+    <p class="section-label">Section 1</p>
+    <h2 class="section-title">画面のキャプチャ</h2>
+    <p class="section-desc">起動すると、この画面が立ち上がります。農業補助金管理を題材にした、4つに区切られたワークスペースです。</p>
+
+    <!-- Browser frame -->
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="traffic">
+          <div class="dot" style="background:#e06060"></div>
+          <div class="dot" style="background:#e0c060"></div>
+          <div class="dot" style="background:#60c060"></div>
+        </div>
+        <div class="url-bar">localhost:3000</div>
+      </div>
+      <div class="breadcrumb-bar">
+        <span class="link">補助金管理</span><span class="sep">/</span>
+        <span class="link">経営基盤強化資金</span><span class="sep">/</span>
+        <span class="current">通帳コピー</span>
+      </div>
+
+      <div class="pane-grid">
+        <!-- Pane 1 -->
+        <div class="pane">
+          <div class="pane-head">補助金ナビ</div>
+          <div class="pane-body">
+            <div class="s-group">実施中</div>
+            <div class="s-item">
+              <div class="s-name">強い農業づくり補助金</div>
+              <div class="s-meta"><span>農水省</span><span>10/31</span></div>
+              <div class="prog"><div class="prog-fill" style="width:25%"></div></div>
+            </div>
+            <div class="s-item active">
+              <div class="s-name">経営基盤強化資金</div>
+              <div class="s-meta"><span>農水省</span><span style="color:#c0392b">8/15</span></div>
+              <div class="prog"><div class="prog-fill" style="width:50%"></div></div>
+            </div>
+            <div class="s-item">
+              <div class="s-name">経営発展支援事業</div>
+              <div class="s-meta"><span>県</span><span>9/30</span></div>
+              <div class="prog"><div class="prog-fill" style="width:67%"></div></div>
+            </div>
+            <div class="s-item">
+              <div class="s-name">環境保全型農業直支金</div>
+              <div class="s-meta"><span>市</span><span>10/31</span></div>
+              <div class="prog"><div class="prog-fill" style="width:0%"></div></div>
+            </div>
+            <div class="s-group" style="margin-top:10px">報告済み</div>
+            <div class="s-item">
+              <div class="s-name">農業次世代人材投資</div>
+              <div class="s-meta"><span>農水省</span><span>完了</span></div>
+              <div class="prog"><div class="prog-fill" style="width:100%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 2 -->
+        <div class="pane">
+          <div class="pane-head">書類リスト</div>
+          <div class="pane-body">
+            <div class="d-group">未収集 5</div>
+            <div class="d-item active">
+              <div class="ddot dgray"></div>
+              <div class="d-name">通帳コピー</div>
+              <span class="d-tag tgray">未収集</span>
+            </div>
+            <div class="d-item">
+              <div class="ddot dgray"></div>
+              <div class="d-name">確定申告書</div>
+              <span class="d-tag tgray">未収集</span>
+            </div>
+            <div class="d-item">
+              <div class="ddot dgray"></div>
+              <div class="d-name">法人登記証明書</div>
+              <span class="d-tag tgray">未収集</span>
+            </div>
+            <div class="d-group" style="margin-top:10px">収集済み 5</div>
+            <div class="d-item">
+              <div class="ddot dblue"></div>
+              <div class="d-name">事業完了報告書</div>
+              <span class="d-tag tblue">収集済み</span>
+            </div>
+            <div class="d-item">
+              <div class="ddot dblue"></div>
+              <div class="d-name">領収書一式</div>
+              <span class="d-tag tblue">収集済み</span>
+            </div>
+            <div class="d-item">
+              <div class="ddot dblue"></div>
+              <div class="d-name">農地図面</div>
+              <span class="d-tag tblue">収集済み</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 3 -->
+        <div class="pane" style="background:#fafafa">
+          <div class="pane-head">書類詳細</div>
+          <div class="pane-body">
+            <div class="detail-title">通帳コピー</div>
+            <div class="warn-box">報告期限まで 18日 — 未収集 5件</div>
+            <div style="font-size:11px;font-weight:700;color:#bbb;margin-bottom:8px;letter-spacing:.5px">書類情報</div>
+            <div class="frow"><div class="flabel">書類名</div><div class="fval">通帳コピー</div></div>
+            <div class="frow"><div class="flabel">ステータス</div><div class="fval">未収集</div></div>
+            <div class="frow"><div class="flabel">個別期限</div><div class="fval">—</div></div>
+            <div class="frow"><div class="flabel">メモ</div><div class="fval">直近3ヶ月分</div></div>
+            <div class="frow"><div class="flabel">ファイル</div><div class="fval">—</div></div>
+          </div>
+        </div>
+
+        <!-- Pane 4 -->
+        <div class="pane">
+          <div class="pane-head">期限サマリー</div>
+          <div class="pane-body">
+            <div class="dl-group" style="color:#c0392b">30日以内</div>
+            <div class="dl-box">
+              <div class="dl-date warn">8/15（18日後）</div>
+              <div class="dl-name">経営基盤強化資金</div>
+              <div class="dl-docs">未収集 5件</div>
+            </div>
+            <div class="dl-group" style="margin-top:8px">31〜90日</div>
+            <div class="dl-item">
+              <div class="dl-date">9/30（80日後）</div>
+              <div class="dl-name">経営発展支援事業</div>
+            </div>
+            <div class="dl-group" style="margin-top:6px">91日以降</div>
+            <div class="dl-item">
+              <div class="dl-date">10/31（141日後）</div>
+              <div class="dl-name">強い農業づくり補助金</div>
+            </div>
+            <div class="dl-item">
+              <div class="dl-date">10/31（141日後）</div>
+              <div class="dl-name">環境保全型農業直支金</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pane-labels">
+        <div class="pl-item">PANE 1 補助金ナビ</div>
+        <div class="pl-item">PANE 2 書類リスト</div>
+        <div class="pl-item">PANE 3 書類詳細</div>
+        <div class="pl-item">PANE 4 期限サマリー</div>
+      </div>
+    </div>
+    <p class="caption">起動直後の画面 — 左から右へ「ざっくり→くわしく」の順に情報が細かくなる</p>
+
+    <!-- Pane descriptions -->
+    <div class="pane-desc">
+      <div class="pd-card">
+        <div class="pd-num">PANE 1</div>
+        <div class="pd-name">補助金ナビ</div>
+        <div class="pd-role">どの補助金を管理中？</div>
+      </div>
+      <div class="pd-card">
+        <div class="pd-num">PANE 2</div>
+        <div class="pd-name">書類リスト</div>
+        <div class="pd-role">今どの書類が足りないか？</div>
+      </div>
+      <div class="pd-card">
+        <div class="pd-num">PANE 3</div>
+        <div class="pd-name">書類詳細</div>
+        <div class="pd-role">この書類の内容は？</div>
+      </div>
+      <div class="pd-card">
+        <div class="pd-num">PANE 4</div>
+        <div class="pd-name">期限サマリー</div>
+        <div class="pd-role">次に対応すべき期限は？</div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── Section 2: 解決する課題 ── -->
+  <section class="section">
+    <p class="section-label">Section 2</p>
+    <h2 class="section-title">解決する課題</h2>
+    <p class="section-desc">
+      農業補助金の採択後は、「全体の把握・書類の収集・期限の管理」の3つを常に行き来する。<br>
+      その3つを1画面に並べることで、視線を画面の外に出さずに完結させる。
+    </p>
+
+    <div class="numbered-list">
+      <div class="numbered-item">
+        <div class="number">01</div>
+        <div class="item-content">
+          <h3>全体を見る — 4〜10件を同時に管理</h3>
+          <p>どの補助金が今どの段階にあり、何件の書類が足りないかを一目で把握したい。Excelのシートを開き直す手間をなくす。</p>
+        </div>
+      </div>
+      <div class="numbered-item">
+        <div class="number">02</div>
+        <div class="item-content">
+          <h3>書類の抜け漏れを防ぐ — チェックリスト管理</h3>
+          <p>「提出していない書類があった」は補助金返還につながる致命的なミス。必要書類を3段階（未収集・収集済み・提出済み）でリスト管理し、視覚的に進捗を追う。</p>
+        </div>
+      </div>
+      <div class="numbered-item">
+        <div class="number">03</div>
+        <div class="item-content">
+          <h3>期限を見逃さない — 時系列アラート</h3>
+          <p>30日以内に迫った補助金は常に画面上部に赤く表示される。複数の期限が混在しても、優先して動くべき案件がすぐにわかる。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── Section 3: 工夫したポイント ── -->
+  <section class="section">
+    <p class="section-label">Section 3</p>
+    <h2 class="section-title">工夫したポイント</h2>
+    <p class="section-desc">機能を増やすのではなく、既存ツールとの役割分担を明確にして採択後に絞り切ること</p>
+
+    <div class="numbered-list">
+      <div class="numbered-item">
+        <div class="number">工夫1</div>
+        <div class="item-content">
+          <h3>「申請前」は作らない — Granty との住み分け</h3>
+          <p>農業補助金の情報収集〜申請書作成は Granty などの既存ツールが強い。このツールは採択通知を受けてからスタートする。既存ツールと機能が重複しないことで、補完関係を作る。</p>
+        </div>
+      </div>
+      <div class="numbered-item">
+        <div class="number">工夫2</div>
+        <div class="item-content">
+          <h3>「前回コピー」で書類登録を1クリックに</h3>
+          <p>農家は毎年同じ補助金を申請することが多い。補助金を新規登録するとき、前回の書類リストをそのままコピーできる機能を中心に設計した。毎回ゼロから書類名を入力する手間がなくなる。</p>
+        </div>
+      </div>
+      <div class="numbered-item">
+        <div class="number">工夫3</div>
+        <div class="item-content">
+          <h3>「完了」を実績報告提出に統一</h3>
+          <p>「補助金の入金確認を完了とする」案もあったが、入金タイミングは行政次第でバラつく。実績報告書を提出した時点を完了とすることで、農場主がコントロールできる明確な区切りにした。</p>
+        </div>
+      </div>
+      <div class="numbered-item">
+        <div class="number">工夫4</div>
+        <div class="item-content">
+          <h3>チームコードでアカウント登録ゼロ</h3>
+          <p>農家に Google アカウント必須・パスワード設定を求めると導入ハードルが上がる。チームコードと名前を入力するだけで使い始められる設計にした。権限区別なし・全員同等で運用をシンプルに保つ。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── Section 4: 苦戦したポイント ── -->
+  <section class="section">
+    <p class="section-label">Section 4</p>
+    <h2 class="section-title">苦戦したポイント</h2>
+    <p class="section-desc">コードより「何を作るか」「最大の痛みはどこか」を決めるところに時間がかかりました</p>
+
+    <div class="numbered-list">
+      <div class="numbered-item">
+        <div class="number">苦戦1</div>
+        <div class="item-content">
+          <h3>「日々のタスク管理」から「補助金管理」への方針転換</h3>
+          <p>最初は日々の農作業スケジュール管理・日報入力ツールとして設計していた（画面7枚・ワイヤーフレーム完成済み）。グリルセッションを繰り返す中で「補助金申請〜完了の管理が一番痛い」と判明し、全面的に設計をやり直した。最初の設計は v1-archive として保管してある。</p>
+        </div>
+      </div>
+      <div class="numbered-item">
+        <div class="number">苦戦2</div>
+        <div class="item-content">
+          <h3>Pane 4 の役割</h3>
+          <p>Pane 3 で書類詳細を見せると、Pane 4 に追加で見せる情報がなくなる問題が起きた。最終的に「期限サマリー（全補助金の時系列一覧）」を配置することで、Pane 1 との役割を「件数で絞る ↔ 時系列で見る」に分けることができた。</p>
+        </div>
+      </div>
+      <div class="numbered-item">
+        <div class="number">苦戦3</div>
+        <div class="item-content">
+          <h3>書類テンプレートの設計</h3>
+          <p>農業補助金の必要書類は国・都道府県・市町村ごとに異なり、毎年変わる。アプリ側が完全なテンプレートを用意するのは不可能。「前回の書類リストをコピーする」が最もユーザーの実態に合っていると判断した。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── 設計の変遷 ── -->
+  <section class="section">
+    <h2 class="section-title">設計の変遷 — 何が変わったか</h2>
+    <p class="section-desc">グリルセッションを重ねることで、最初の設計から大きく変わった点のマッピング</p>
+
+    <div class="comparison">
+      <div class="cmp-col">
+        <div class="cmp-label">最初の設計（日々のタスク管理）</div>
+        <div class="cmp-item"><div class="cmp-key">コア機能</div><div class="before">今日のタスク一覧・日報入力</div></div>
+        <div class="cmp-item"><div class="cmp-key">ターゲット</div><div class="before">毎日の農作業管理</div></div>
+        <div class="cmp-item"><div class="cmp-key">画面数</div><div class="before">S-01〜S-07（7画面）</div></div>
+        <div class="cmp-item"><div class="cmp-key">競合</div><div class="before">アグリノート・KSAS と競合</div></div>
+        <div class="cmp-item"><div class="cmp-key">利用頻度</div><div class="before">毎日使うことを前提</div></div>
+        <div class="cmp-item"><div class="cmp-key">痛みの強度</div><div class="before">「あると便利」レベル</div></div>
+      </div>
+      <div class="cmp-col">
+        <div class="cmp-label">現在の設計（補助金管理）</div>
+        <div class="cmp-item"><div class="cmp-key">コア機能</div><div class="after">書類チェックリスト管理</div></div>
+        <div class="cmp-item"><div class="cmp-key">ターゲット</div><div class="after">採択後〜実績報告提出まで</div></div>
+        <div class="cmp-item"><div class="cmp-key">画面数</div><div class="after">S-01〜S-07（4ペイン構成）</div></div>
+        <div class="cmp-item"><div class="cmp-key">競合</div><div class="after">採択後管理の空白地帯を狙う</div></div>
+        <div class="cmp-item"><div class="cmp-key">利用頻度</div><div class="after">報告期限前に集中して使う</div></div>
+        <div class="cmp-item"><div class="cmp-key">痛みの強度</div><div class="after">「やらないと返還」の強制力</div></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
