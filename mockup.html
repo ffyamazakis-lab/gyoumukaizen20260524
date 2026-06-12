@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>農業補助金管理ツール</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", sans-serif;
+      font-size: 13px;
+      background: #f0f2f4;
+      color: #333;
+      height: 100vh;
+      overflow: hidden;
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #aaa; }
+  </style>
+</head>
+<body>
+<div id="root" style="height:100vh"></div>
+<script type="text/babel">
+const { useState } = React;
+
+/* ─── データ ─── */
+const SUBSIDIES = [
+  {
+    id: 1, name: "強い農業づくり補助金", grantor: "農水省",
+    amount: "300万円", period: "2026/4〜9", deadline: "2026/10/31",
+    daysLeft: 141, status: "実施中", urgent: false, docsTotal: 8, docsDone: 2,
+    docs: [
+      { name: "写真（施工前後）",    st: "未収集", dl: "2026/10/20", memo: "施工前後を各3枚以上" },
+      { name: "見積書（原本）",      st: "未収集", dl: "",           memo: "" },
+      { name: "農地賃貸借契約書",    st: "未収集", dl: "",           memo: "" },
+      { name: "通帳コピー",          st: "未収集", dl: "",           memo: "直近3ヶ月分" },
+      { name: "事業実施状況報告書",  st: "未収集", dl: "",           memo: "様式第3号" },
+      { name: "確定申告書コピー",    st: "未収集", dl: "",           memo: "直近1期分" },
+      { name: "領収書（農機具購入）",st: "収集済み", dl: "",         memo: "原本" },
+      { name: "事業完了報告書",      st: "提出済み", dl: "",         memo: "様式第2号" },
+    ],
+  },
+  {
+    id: 2, name: "経営基盤強化資金", grantor: "農水省",
+    amount: "500万円", period: "2026/3〜8", deadline: "2026/8/15",
+    daysLeft: 18, status: "実施中", urgent: true, docsTotal: 10, docsDone: 5,
+    docs: [
+      { name: "通帳コピー",       st: "未収集", dl: "",        memo: "" },
+      { name: "確定申告書",       st: "未収集", dl: "",        memo: "" },
+      { name: "法人登記証明書",   st: "未収集", dl: "",        memo: "3ヶ月以内のもの" },
+      { name: "役員名簿",         st: "未収集", dl: "",        memo: "" },
+      { name: "決算書（3期分）",  st: "未収集", dl: "",        memo: "" },
+      { name: "事業完了報告書",   st: "収集済み", dl: "",      memo: "" },
+      { name: "領収書一式",       st: "収集済み", dl: "",      memo: "" },
+      { name: "写真（施工前後）", st: "収集済み", dl: "",      memo: "" },
+      { name: "見積書",           st: "収集済み", dl: "",      memo: "" },
+      { name: "農地図面",         st: "収集済み", dl: "",      memo: "" },
+    ],
+  },
+  {
+    id: 3, name: "経営発展支援事業", grantor: "県",
+    amount: "200万円", period: "2026/5〜10", deadline: "2026/9/30",
+    daysLeft: 80, status: "実施中", urgent: false, docsTotal: 6, docsDone: 4,
+    docs: [
+      { name: "通帳コピー",     st: "未収集", dl: "", memo: "" },
+      { name: "確定申告書",     st: "未収集", dl: "", memo: "" },
+      { name: "事業完了報告書", st: "提出済み", dl: "", memo: "" },
+      { name: "領収書",         st: "収集済み", dl: "", memo: "" },
+      { name: "写真",           st: "収集済み", dl: "", memo: "" },
+      { name: "見積書",         st: "収集済み", dl: "", memo: "" },
+    ],
+  },
+  {
+    id: 4, name: "環境保全型農業直支金", grantor: "市",
+    amount: "80万円", period: "2026/4〜11", deadline: "2026/10/31",
+    daysLeft: 141, status: "実施中", urgent: false, docsTotal: 5, docsDone: 0,
+    docs: [
+      { name: "実施状況報告書",   st: "未収集", dl: "", memo: "" },
+      { name: "領収書",           st: "未収集", dl: "", memo: "" },
+      { name: "写真（取組前後）", st: "未収集", dl: "", memo: "" },
+      { name: "栽培記録",         st: "未収集", dl: "", memo: "" },
+      { name: "農地地図",         st: "未収集", dl: "", memo: "" },
+    ],
+  },
+  {
+    id: 5, name: "農業次世代人材投資", grantor: "農水省",
+    amount: "150万円", period: "2025/4〜2026/3", deadline: "2026/5/31",
+    daysLeft: -42, status: "報告済み", urgent: false, docsTotal: 7, docsDone: 7,
+    docs: [
+      { name: "経営計画書",   st: "提出済み", dl: "", memo: "" },
+      { name: "収支計画書",   st: "提出済み", dl: "", memo: "" },
+      { name: "活動報告書",   st: "提出済み", dl: "", memo: "" },
+      { name: "領収書一式",   st: "提出済み", dl: "", memo: "" },
+      { name: "写真",         st: "提出済み", dl: "", memo: "" },
+      { name: "通帳コピー",   st: "提出済み", dl: "", memo: "" },
+      { name: "確定申告書",   st: "提出済み", dl: "", memo: "" },
+    ],
+  },
+];
+
+/* ─── カラーテーマ ─── */
+const C = {
+  bg:         "#f0f2f4",
+  panel:      "#ffffff",
+  bdr:        "#e0e3e6",
+  divider:    "#eeeeee",
+  txt:        "#333333",
+  txtSec:     "#666666",
+  txtTri:     "#999999",
+  accent:     "#2c6e49",
+  accentBg:   "#e8f5ee",
+  accentBdr:  "#2c6e49",
+  warnText:   "#b03020",
+  warnBg:     "#fff5f5",
+  warnBdr:    "#e8a0a0",
+  badge:      "#e6e8ea",
+  badgeTxt:   "#555555",
+  tagGreen:   "#e8f5ee",
+  tagGreenT:  "#2c6e49",
+  tagBlue:    "#e3eeff",
+  tagBlueT:   "#1a56a0",
+  tagGray:    "#eeeeee",
+  tagGrayT:   "#666666",
+};
+
+/* ─── 汎用UI ─── */
+function StatusTag({ st }) {
+  const map = {
+    "提出済み": { bg: C.tagGreen, color: C.tagGreenT },
+    "収集済み": { bg: C.tagBlue,  color: C.tagBlueT  },
+    "未収集":   { bg: C.tagGray,  color: C.tagGrayT  },
+  };
+  const s = map[st] || map["未収集"];
+  return (
+    <span style={{
+      display: "inline-block", padding: "2px 7px",
+      fontSize: 11, borderRadius: 3,
+      background: s.bg, color: s.color, fontWeight: 500,
+    }}>{st}</span>
+  );
+}
+
+function ProgressBar({ done, total, h = 5 }) {
+  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+  return (
+    <div style={{ height: h, background: "#e0e3e6", borderRadius: h }}>
+      <div style={{ width: `${pct}%`, height: h, background: C.accent, borderRadius: h, transition: "width .3s" }} />
+    </div>
+  );
+}
+
+function SectionHeader({ label, count }) {
+  return (
+    <div style={{
+      padding: "6px 14px 4px",
+      fontSize: 11, fontWeight: 600, color: C.txtTri, letterSpacing: 0.5,
+      display: "flex", alignItems: "center", gap: 6,
+    }}>
+      {label}
+      <span style={{
+        background: C.badge, color: C.badgeTxt,
+        borderRadius: 10, padding: "1px 7px", fontSize: 11, fontWeight: 500,
+      }}>{count}</span>
+    </div>
+  );
+}
+
+function FieldRow({ label, value, accent, mono }) {
+  return (
+    <tr>
+      <td style={{
+        padding: "8px 12px 8px 0", width: 110, verticalAlign: "top",
+        color: C.txtSec, fontSize: 12, whiteSpace: "nowrap",
+        borderBottom: `1px solid ${C.divider}`,
+      }}>{label}</td>
+      <td style={{
+        padding: "8px 0", verticalAlign: "top",
+        color: accent ? C.warnText : C.txt,
+        fontWeight: accent ? 600 : 400,
+        fontSize: 12,
+        borderBottom: `1px solid ${C.divider}`,
+        fontFamily: mono ? "monospace" : "inherit",
+      }}>{value || "—"}</td>
+    </tr>
+  );
+}
+
+/* ─── Pane 1: 補助金ナビ ─── */
+function Pane1({ selId, onSelect }) {
+  const groups = [
+    { label: "実施中", items: SUBSIDIES.filter(s => s.status === "実施中") },
+    { label: "報告済み", items: SUBSIDIES.filter(s => s.status === "報告済み") },
+    { label: "完了", items: SUBSIDIES.filter(s => s.status === "完了") },
+  ].filter(g => g.items.length > 0);
+
+  return (
+    <div style={{
+      width: 190, flexShrink: 0,
+      background: C.panel, borderRight: `1px solid ${C.bdr}`,
+      display: "flex", flexDirection: "column", overflow: "hidden",
+    }}>
+      <div style={{
+        padding: "10px 14px", fontSize: 11, fontWeight: 700,
+        color: C.txtTri, letterSpacing: 0.8,
+        borderBottom: `1px solid ${C.divider}`,
+      }}>補助金ナビ</div>
+
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        {groups.map(({ label, items }) => (
+          <div key={label}>
+            <SectionHeader label={label} count={items.length} />
+            {items.map(s => {
+              const pending = s.docs.filter(d => d.st === "未収集").length;
+              const isSel = selId === s.id;
+              return (
+                <div key={s.id} onClick={() => onSelect(s.id)} style={{
+                  padding: "8px 14px",
+                  cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 8,
+                  borderLeft: `3px solid ${isSel ? C.accent : "transparent"}`,
+                  background: isSel ? C.accentBg : "transparent",
+                }}>
+                  <span style={{
+                    flex: 1, fontSize: 12, lineHeight: 1.4,
+                    fontWeight: isSel ? 600 : 400,
+                    color: isSel ? C.accent : C.txt,
+                    overflow: "hidden",
+                    display: "-webkit-box", WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                  }}>{s.name}</span>
+                  {pending > 0 && (
+                    <span style={{
+                      flexShrink: 0, fontSize: 11,
+                      background: isSel ? C.accent : C.badge,
+                      color: isSel ? "#fff" : C.badgeTxt,
+                      borderRadius: 10, padding: "1px 6px",
+                    }}>{pending}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Pane 2: 書類リスト ─── */
+function Pane2({ subsidy, selDoc, onSelect }) {
+  if (!subsidy) return null;
+
+  const groups = [
+    { label: "未収集", items: subsidy.docs.map((d, i) => ({ ...d, i })).filter(d => d.st === "未収集") },
+    { label: "収集済み", items: subsidy.docs.map((d, i) => ({ ...d, i })).filter(d => d.st === "収集済み") },
+    { label: "提出済み", items: subsidy.docs.map((d, i) => ({ ...d, i })).filter(d => d.st === "提出済み") },
+  ].filter(g => g.items.length > 0);
+
+  return (
+    <div style={{
+      width: 260, flexShrink: 0,
+      background: C.panel, borderRight: `1px solid ${C.bdr}`,
+      display: "flex", flexDirection: "column", overflow: "hidden",
+    }}>
+      <div style={{
+        padding: "10px 14px", fontSize: 11, fontWeight: 700,
+        color: C.txtTri, letterSpacing: 0.8,
+        borderBottom: `1px solid ${C.divider}`,
+        display: "flex", alignItems: "center", gap: 6,
+      }}>
+        書類リスト
+        <span style={{ marginLeft: "auto", fontSize: 11, color: C.txtTri, fontWeight: 400 }}>
+          {subsidy.docsDone}/{subsidy.docsTotal}件
+        </span>
+      </div>
+      <div style={{ padding: "6px 14px 4px" }}>
+        <ProgressBar done={subsidy.docsDone} total={subsidy.docsTotal} />
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        {groups.map(({ label, items }) => (
+          <div key={label}>
+            <SectionHeader label={label} count={items.length} />
+            {items.map(({ name, st, dl, memo, i }) => {
+              const isSel = selDoc === i;
+              return (
+                <div key={i} onClick={() => onSelect(i)} style={{
+                  padding: "9px 14px",
+                  cursor: "pointer",
+                  borderLeft: `3px solid ${isSel ? C.accent : "transparent"}`,
+                  background: isSel ? C.accentBg : "transparent",
+                  borderBottom: `1px solid ${C.divider}`,
+                }}>
+                  <div style={{
+                    fontSize: 12, fontWeight: isSel ? 600 : 500,
+                    color: isSel ? C.accent : C.txt,
+                    marginBottom: 4,
+                    overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis",
+                  }}>{name}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <StatusTag st={st} />
+                    {dl && <span style={{ fontSize: 11, color: C.warnText }}>期限 {dl}</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Pane 3: 詳細 ─── */
+function Pane3({ subsidy, doc }) {
+  if (!subsidy) return <div style={{ flex: 1, background: C.bg }} />;
+
+  const showDoc = doc !== null && doc !== undefined;
+  const title = showDoc ? doc.name : subsidy.name;
+
+  return (
+    <div style={{
+      flex: 1, background: C.bg,
+      display: "flex", flexDirection: "column", overflow: "hidden",
+    }}>
+      {/* ヘッダー */}
+      <div style={{
+        background: C.panel, borderBottom: `1px solid ${C.bdr}`,
+        padding: "14px 20px",
+      }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: C.txt, marginBottom: 2 }}>{title}</div>
+        {showDoc && (
+          <div style={{ fontSize: 12, color: C.txtSec }}>{subsidy.name}</div>
+        )}
+      </div>
+
+      {/* コンテンツ */}
+      <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+        {showDoc ? (
+          /* 書類詳細 */
+          <div>
+            <div style={{
+              background: C.panel, border: `1px solid ${C.bdr}`,
+              borderRadius: 6, padding: "14px 16px", marginBottom: 16,
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.txtTri, marginBottom: 10, letterSpacing: 0.6 }}>書類情報</div>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <tbody>
+                  <FieldRow label="書類名"     value={doc.name} />
+                  <FieldRow label="ステータス"  value={<StatusTag st={doc.st} />} />
+                  <FieldRow label="個別期限"    value={doc.dl || "—"} accent={!!doc.dl} />
+                  <FieldRow label="ファイルリンク" value="—" />
+                  <FieldRow label="メモ"        value={doc.memo || "—"} />
+                </tbody>
+              </table>
+            </div>
+
+            {/* ステータス変更ボタン */}
+            <div style={{
+              background: C.panel, border: `1px solid ${C.bdr}`,
+              borderRadius: 6, padding: "14px 16px",
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.txtTri, marginBottom: 10, letterSpacing: 0.6 }}>ステータス変更</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {["未収集", "収集済み", "提出済み"].map(st => (
+                  <button key={st} style={{
+                    padding: "6px 14px", borderRadius: 4, fontSize: 12, cursor: "pointer",
+                    border: `1px solid ${doc.st === st ? C.accent : C.bdr}`,
+                    background: doc.st === st ? C.accentBg : C.panel,
+                    color: doc.st === st ? C.accent : C.txtSec,
+                    fontWeight: doc.st === st ? 600 : 400,
+                  }}>{st}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* 補助金詳細 */
+          <div>
+            {subsidy.urgent && (
+              <div style={{
+                background: C.warnBg, border: `1px solid ${C.warnBdr}`,
+                borderRadius: 6, padding: "10px 14px", marginBottom: 16,
+                fontSize: 12, color: C.warnText,
+              }}>
+                報告期限まで {subsidy.daysLeft} 日 — 書類 {subsidy.docsTotal - subsidy.docsDone} 件が未完了です。
+              </div>
+            )}
+
+            <div style={{
+              background: C.panel, border: `1px solid ${C.bdr}`,
+              borderRadius: 6, padding: "14px 16px", marginBottom: 16,
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.txtTri, marginBottom: 10, letterSpacing: 0.6 }}>補助金情報</div>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <tbody>
+                  <FieldRow label="補助金名"   value={subsidy.name} />
+                  <FieldRow label="交付元"     value={subsidy.grantor} />
+                  <FieldRow label="交付決定額" value={subsidy.amount} />
+                  <FieldRow label="事業期間"   value={subsidy.period} />
+                  <FieldRow label="報告期限"   value={`${subsidy.deadline}（${subsidy.daysLeft >= 0 ? `${subsidy.daysLeft}日後` : `${Math.abs(subsidy.daysLeft)}日超過`}）`} accent={subsidy.urgent} />
+                  <FieldRow label="ステータス" value={subsidy.status} />
+                  <FieldRow label="メモ"       value="担当窓口: ○○農政局 田中様" />
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{
+              background: C.panel, border: `1px solid ${C.bdr}`,
+              borderRadius: 6, padding: "14px 16px",
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.txtTri, marginBottom: 10, letterSpacing: 0.6 }}>書類進捗</div>
+              <ProgressBar done={subsidy.docsDone} total={subsidy.docsTotal} h={6} />
+              <div style={{ display: "flex", gap: 20, marginTop: 12 }}>
+                {[
+                  ["提出済み", subsidy.docs.filter(d => d.st === "提出済み").length, C.tagGreenT],
+                  ["収集済み", subsidy.docs.filter(d => d.st === "収集済み").length, C.tagBlueT],
+                  ["未収集",   subsidy.docs.filter(d => d.st === "未収集").length,   C.txtTri],
+                ].map(([lbl, cnt, color]) => (
+                  <div key={lbl} style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 18, fontWeight: 700, color }}>{cnt}</div>
+                    <div style={{ fontSize: 11, color: C.txtTri, marginTop: 2 }}>{lbl}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Pane 4: 期限サマリー ─── */
+function Pane4({ subsidy }) {
+  const within30 = SUBSIDIES
+    .filter(s => s.daysLeft >= 0 && s.daysLeft <= 30)
+    .sort((a, b) => a.daysLeft - b.daysLeft);
+  const upcoming = SUBSIDIES
+    .filter(s => s.daysLeft > 30)
+    .sort((a, b) => a.daysLeft - b.daysLeft)
+    .slice(0, 4);
+
+  return (
+    <div style={{
+      width: 220, flexShrink: 0,
+      background: C.panel, borderLeft: `1px solid ${C.bdr}`,
+      display: "flex", flexDirection: "column", overflow: "hidden",
+    }}>
+      <div style={{
+        padding: "10px 14px", fontSize: 11, fontWeight: 700,
+        color: C.txtTri, letterSpacing: 0.8,
+        borderBottom: `1px solid ${C.divider}`,
+      }}>期限サマリー</div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "10px 14px" }}>
+        {within30.length > 0 && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.warnText, marginBottom: 6 }}>要対応（30日以内）</div>
+            {within30.map(s => (
+              <div key={s.id} style={{
+                padding: "8px 10px", borderRadius: 4, marginBottom: 6,
+                background: C.warnBg, border: `1px solid ${C.warnBdr}`,
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: C.warnText, marginBottom: 2 }}>
+                  {s.deadline}（{s.daysLeft}日後）
+                </div>
+                <div style={{ fontSize: 11, color: C.txtSec, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                  {s.name}
+                </div>
+                <div style={{ fontSize: 11, color: C.txtTri, marginTop: 2 }}>
+                  未収集 {s.docs.filter(d => d.st === "未収集").length} 件
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: C.txtTri, marginBottom: 6 }}>今後の期限</div>
+          {upcoming.map(s => (
+            <div key={s.id} style={{
+              padding: "8px 0", borderBottom: `1px solid ${C.divider}`,
+            }}>
+              <div style={{ fontSize: 11, color: C.txt, marginBottom: 2 }}>{s.deadline}</div>
+              <div style={{ fontSize: 11, color: C.txtSec, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                {s.name}
+              </div>
+              <div style={{ marginTop: 4 }}>
+                <ProgressBar done={s.docsDone} total={s.docsTotal} h={3} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── ルートアプリ ─── */
+function App() {
+  const [selSubsidy, setSelSubsidy] = useState(2);
+  const [selDoc, setSelDoc] = useState(null);
+
+  const subsidy = SUBSIDIES.find(s => s.id === selSubsidy);
+  const doc = selDoc !== null && subsidy ? subsidy.docs[selDoc] : undefined;
+
+  const crumbs = [
+    "補助金管理",
+    subsidy?.name,
+    doc?.name,
+  ].filter(Boolean);
+
+  function handleSelectSubsidy(id) {
+    setSelSubsidy(id);
+    setSelDoc(null);
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+
+      {/* パンくずナビ */}
+      <div style={{
+        background: C.panel, borderBottom: `1px solid ${C.bdr}`,
+        padding: "9px 16px", fontSize: 12, color: C.txtSec,
+        display: "flex", alignItems: "center", gap: 2, flexShrink: 0,
+      }}>
+        {crumbs.map((c, i) => (
+          <span key={i} style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {i > 0 && <span style={{ color: C.txtTri, padding: "0 4px" }}>/</span>}
+            <span style={{
+              color: i === crumbs.length - 1 ? C.txt : C.accent,
+              fontWeight: i === crumbs.length - 1 ? 600 : 400,
+              cursor: i < crumbs.length - 1 ? "pointer" : "default",
+            }}>{c}</span>
+          </span>
+        ))}
+      </div>
+
+      {/* 4ペイン */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        <Pane1 selId={selSubsidy} onSelect={handleSelectSubsidy} />
+        <Pane2 subsidy={subsidy} selDoc={selDoc} onSelect={setSelDoc} />
+        <Pane3 subsidy={subsidy} doc={doc} />
+        <Pane4 subsidy={subsidy} />
+      </div>
+
+      {/* ペインラベルフッター */}
+      <div style={{
+        background: C.panel, borderTop: `1px solid ${C.bdr}`,
+        display: "flex", flexShrink: 0,
+      }}>
+        {[
+          { label: "PANE 1 補助金ナビ", w: 190 },
+          { label: "PANE 2 書類リスト", w: 260 },
+          { label: "PANE 3 詳細",       flex: true },
+          { label: "PANE 4 期限サマリー", w: 220 },
+        ].map(({ label, w, flex }, i) => (
+          <div key={i} style={{
+            width: flex ? undefined : w,
+            flex: flex ? 1 : undefined,
+            padding: "6px 14px",
+            fontSize: 11, color: C.txtTri,
+            borderRight: i < 3 ? `1px solid ${C.bdr}` : undefined,
+          }}>{label}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
